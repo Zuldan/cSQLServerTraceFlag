@@ -8,7 +8,7 @@ Configuration SQLServerTraceFlagRemoveExample
     {
         cSQLServerTraceFlag SQLTraceFlagRemove
         {
-            Ensure            = 'Present'
+            Ensure            = 'Absent'
             SQLVersion        = $Node.SQLVersion
             SQLInstanceName   = $Node.SQLInstanceName
             TraceFlag         = 'T1118','T2371'
