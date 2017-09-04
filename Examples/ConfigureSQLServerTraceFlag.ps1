@@ -9,7 +9,6 @@ Configuration SQLServerTraceFlagConfigureExample
         cSQLServerTraceFlag SQLTraceFlagConfigure
         {
             Ensure            = 'Present'
-            SQLVersion        = $Node.SQLVersion
             SQLInstanceName   = $Node.SQLInstanceName
             TraceFlag         = 'T834','T1117','T1118','T2371','T3226'
             RestartSQLService = $True
@@ -25,7 +24,6 @@ $ConfigurationData = @{
         }
         @{
             NodeName = "SCDB.contoso.com"
-            SQLVersion = 13
             SQLInstanceName = 'MSSQLSERVER'
         }
     )

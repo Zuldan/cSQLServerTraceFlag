@@ -9,7 +9,6 @@ Configuration SQLServerTraceFlagRemoveExample
         cSQLServerTraceFlag SQLTraceFlagRemove
         {
             Ensure            = 'Absent'
-            SQLVersion        = $Node.SQLVersion
             SQLInstanceName   = $Node.SQLInstanceName
             TraceFlag         = 'T1118','T2371'
             RestartSQLService = $True
@@ -25,7 +24,6 @@ $ConfigurationData = @{
         }
         @{
             NodeName = "SCDB.contoso.com"
-            SQLVersion = 13
             SQLInstanceName = 'MSSQLSERVER'
         }
     )
