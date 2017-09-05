@@ -5,17 +5,12 @@ function Get-SQLTraceFlag
     Param
     (
         [Parameter(Mandatory = $true,
-                   Position = 0)]
-        [System.Int16]
-        $SQLVersion,
-
-        [Parameter(Mandatory = $true,
                    Position = 1)]
         [System.String]           
         $SQLInstanceName
     )
 
-    Add-Type -AssemblyName "Microsoft.SqlServer.SqlWmiManagement,Version=$SQLVersion.0.0.0,Culture=neutral,PublicKeyToken=89845dcd8080cc91"
+    Initialize-SQLSMOAssembly
     $SQLManagement = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer $env:COMPUTERNAME
     $WMIService = $SQLManagement.Services | Where-Object -FilterScript { $PSItem.Name -eq $SQLInstanceName }
     $ParameterList = $WMIService.StartupParameters.Split(';')
@@ -29,11 +24,6 @@ function Set-SQLTraceFlag
     [CmdletBinding()]
     Param
     (
-        [Parameter(Mandatory = $true,
-                   Position = 0)]
-        [System.Int16]            
-        $SQLVersion,
-
         [Parameter(Position = 1)]
         [System.String]
         $SQLInstanceName = 'MSSQLServer',
@@ -47,7 +37,7 @@ function Set-SQLTraceFlag
         $RestartSQLService
     )
 
-    Add-Type -AssemblyName "Microsoft.SqlServer.SqlWmiManagement,Version=$SQLVersion.0.0.0,Culture=neutral,PublicKeyToken=89845dcd8080cc91"
+    Initialize-SQLSMOAssembly
     $sqlManagement = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer $env:COMPUTERNAME
     $wmiService = $sqlManagement.Services | Where-Object -FilterScript { $PSItem.Name -eq $SQLInstanceName }
 
@@ -92,11 +82,6 @@ function Remove-SQLTraceFlag
     [CmdletBinding()]
     Param
     (
-        [Parameter(Mandatory = $true,
-                   Position = 0)]
-        [System.Int16]            
-        $SQLVersion,
-
         [Parameter(Position = 1)]
         [System.String]
         $SQLInstanceName = 'MSSQLServer',
@@ -110,7 +95,7 @@ function Remove-SQLTraceFlag
         $RestartSQLService
     )
 
-    Add-Type -AssemblyName "Microsoft.SqlServer.SqlWmiManagement,Version=$SQLVersion.0.0.0,Culture=neutral,PublicKeyToken=89845dcd8080cc91"
+    Initialize-SQLSMOAssembly
     $sqlManagement = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer $env:COMPUTERNAME
     $wmiService = $sqlManagement.Services | Where-Object -FilterScript { $PSItem.Name -eq $SQLInstanceName }
 
@@ -140,5 +125,44 @@ function Remove-SQLTraceFlag
         $wmiService.Start()
 
         ($sqlManagement.Services | Where-Object -FilterScript { $PSItem.Name -eq 'SQLSERVERAGENT' }).Start()
+    }
+}
+
+function Initialize-SQLSMOAssembly {
+
+    # Source: https://blog.netnerds.net/2016/12/loading-smo-in-your-sql-server-centric-powershell-modules/
+    $smoversions = "14.0.0.0", "13.0.0.0", "12.0.0.0", "11.0.0.0", "10.0.0.0", "9.0.242.0", "9.0.0.0"
+
+    foreach ($smoversion in $smoversions)
+    {
+        try
+        {
+            Add-Type -AssemblyName "Microsoft.SqlServer.Smo, Version=$smoversion, Culture=neutral, PublicKeyToken=89845dcd8080cc91" -ErrorAction Stop
+            $smoadded = $true
+        }
+        catch
+        {
+            $smoadded = $false
+        }
+    
+        if ($smoadded -eq $true) { break }
+    }
+
+    if ($smoadded -eq $false) { throw "Can't load SMO assemblies. You must have SQL Server Management Studio installed to proceed." }
+
+    $assemblies = "Management.Common", "Dmf", "Instapi", "SqlWmiManagement", "ConnectionInfo", "SmoExtended", "SqlTDiagM", "Management.Utility",
+    "SString", "Management.RegisteredServers", "Management.Sdk.Sfc", "SqlEnum", "RegSvrEnum", "WmiEnum", "ServiceBrokerEnum", "Management.XEvent",
+    "ConnectionInfoExtended", "Management.Collector", "Management.CollectorEnum", "Management.Dac", "Management.DacEnum", "Management.IntegrationServices"
+
+    foreach ($assembly in $assemblies)
+    {
+        try
+        {
+            Add-Type -AssemblyName "Microsoft.SqlServer.$assembly, Version=$smoversion, Culture=neutral, PublicKeyToken=89845dcd8080cc91" -ErrorAction Stop
+        }
+        catch
+        {
+            # Don't care
+        }
     }
 }

@@ -14,10 +14,6 @@ class cSQLServerTraceFlag
     [Ensure]
     $Ensure
 
-    [DscProperty(Mandatory)]
-    [System.Int16]
-    $SQLVersion
-
     [DscProperty(Key)]
     [System.String]
     $SQLInstanceName
@@ -36,7 +32,6 @@ class cSQLServerTraceFlag
         {
             # Create mandatory parameters
             $addSQLTraceFlagParameters = @{
-                SQLVersion = $this.SQLVersion 
                 SQLInstanceName = $this.SQLInstanceName 
                 TraceFlag = $this.TraceFlag 
                 RestartSQLService = $this.RestartSQLService
@@ -49,7 +44,6 @@ class cSQLServerTraceFlag
         {
             # Create mandatory parameters
             $addSQLTraceFlagParameters = @{
-                SQLVersion = $this.SQLVersion 
                 SQLInstanceName = $this.SQLInstanceName 
                 TraceFlag = $this.TraceFlag 
                 RestartSQLService = $this.RestartSQLService
@@ -98,7 +92,6 @@ class cSQLServerTraceFlag
 
         # Create mandatory parameters
         $getSQLTraceFlagParameters = @{
-            SQLVersion = $this.SQLVersion 
             SQLInstanceName = $this.SQLInstanceName 
         }
 
