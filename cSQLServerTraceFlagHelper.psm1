@@ -10,9 +10,20 @@ function Get-SQLTraceFlag
         $SQLInstanceName
     )
 
+    if ($SQLInstanceName -ne 'MSSQLServer')
+    {
+        $ServiceEngineName = ('MSSQL${0}' -f $SQLInstanceName)
+        $ServiceAgentName = ('SQLAgent${0}' -f $SQLInstanceName)
+    }
+    else
+    {
+        $ServiceEngineName = 'MSSQLServer'
+        $ServiceAgentName = 'SQLSERVERAGENT'
+    }
+    
     Initialize-SQLSMOAssembly
     $SQLManagement = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer $env:COMPUTERNAME
-    $WMIService = $SQLManagement.Services | Where-Object -FilterScript { $PSItem.Name -eq $SQLInstanceName }
+    $WMIService = $SQLManagement.Services | Where-Object -FilterScript { $PSItem.Name -eq $ServiceEngineName }
     $ParameterList = $WMIService.StartupParameters.Split(';')
     $ParameterList | Where-Object -FilterScript { $PSItem -like '-T*' } | ForEach-Object {
         $PSItem.TrimStart('-')
@@ -37,9 +48,20 @@ function Set-SQLTraceFlag
         $RestartSQLService
     )
 
+    if ($SQLInstanceName -ne 'MSSQLServer')
+    {
+        $ServiceEngineName = ('MSSQL${0}' -f $SQLInstanceName)
+        $ServiceAgentName = ('SQLAgent${0}' -f $SQLInstanceName)
+    }
+    else
+    {
+        $ServiceEngineName = 'MSSQLServer'
+        $ServiceAgentName = 'SQLSERVERAGENT'
+    }
+
     Initialize-SQLSMOAssembly
     $sqlManagement = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer $env:COMPUTERNAME
-    $wmiService = $sqlManagement.Services | Where-Object -FilterScript { $PSItem.Name -eq $SQLInstanceName }
+    $wmiService = $sqlManagement.Services | Where-Object -FilterScript { $PSItem.Name -eq $ServiceEngineName }
 
     # Add '-' dash to flag
     $traceFlagList = $TraceFlag | ForEach-Object {
@@ -73,7 +95,7 @@ function Set-SQLTraceFlag
         Start-Sleep -Seconds 10
         $wmiService.Start()
 
-        ($sqlManagement.Services | Where-Object -FilterScript { $PSItem.Name -eq 'SQLSERVERAGENT' }).Start()
+        ($sqlManagement.Services | Where-Object -FilterScript { $PSItem.Name -eq $ServiceAgentName }).Start()
     }
 }
 
@@ -95,9 +117,20 @@ function Remove-SQLTraceFlag
         $RestartSQLService
     )
 
+    if ($SQLInstanceName -ne 'MSSQLServer')
+    {
+        $ServiceEngineName = ('MSSQL${0}' -f $SQLInstanceName)
+        $ServiceAgentName = ('SQLAgent${0}' -f $SQLInstanceName)
+    }
+    else
+    {
+        $ServiceEngineName = 'MSSQLServer'
+        $ServiceAgentName = 'SQLSERVERAGENT'
+    }
+
     Initialize-SQLSMOAssembly
     $sqlManagement = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer $env:COMPUTERNAME
-    $wmiService = $sqlManagement.Services | Where-Object -FilterScript { $PSItem.Name -eq $SQLInstanceName }
+    $wmiService = $sqlManagement.Services | Where-Object -FilterScript { $PSItem.Name -eq $ServiceEngineName }
 
     # Add '-' dash to flag
     $traceFlagList = $TraceFlag | ForEach-Object {
@@ -124,7 +157,7 @@ function Remove-SQLTraceFlag
         Start-Sleep -Seconds 10
         $wmiService.Start()
 
-        ($sqlManagement.Services | Where-Object -FilterScript { $PSItem.Name -eq 'SQLSERVERAGENT' }).Start()
+        ($sqlManagement.Services | Where-Object -FilterScript { $PSItem.Name -eq $ServiceAgentName }).Start()
     }
 }
 
